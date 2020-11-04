@@ -1,0 +1,81 @@
+<view class="container">
+  <view class="search">
+    <input type="text" placeholder="输入搜索关键词" value="{{name}}" bindinput="bindinput" bindconfirm="bindconfirm"></input>
+    <image src="/images/icon/search.svg"></image>
+  </view>
+  <view class="content-container">
+    <scroll-view class="category-container" scroll-y="true" scroll-with-animation="true">
+      <view wx:if="{{category.level == 1}}" class="category {{categorySelected.id==category.id?'active':''}}" wx:for="{{categories}}" wx:for-item="category" wx:key="id" data-id="{{category.id}}" bindtap="onCategoryClick">
+        <view class="name {{categorySelected.id==category.id?'active':''}}">{{category.name}}</view>
+      </view>
+    </scroll-view>
+    <scroll-view class="goods-container" scroll-y="true" scroll-top="{{scrolltop}}" wx:if='{{onLoadStatus}}'>
+      <van-empty wx:if="{{!currentGoods}}" description="暂无商品" />
+      <block wx:for="{{categories}}" wx:key="id" wx:if="{{item.pid == categorySelected.id}}">
+        <navigator url="/pages/goods/list?categoryId={{item.id}}">
+          <view class="no-data medium-category">
+            <view class="line"></view>
+            <view class="txt">{{item.name}}</view>
+            <view class="line"></view>
+          </view>
+        </navigator>
+        <view class="small-category-box">
+          <navigator wx:for="{{categories}}" wx:for-item="small" wx:key="id" wx:if="{{small.pid == item.id}}" url="/pages/goods/list?categoryId={{small.id}}">
+            <view class="small-category">
+              <image mode="aspectFill" src="{{small.icon}}"></image>
+              <view>{{small.name}}</view>
+            </view>
+          </navigator>
+        </view>
+      </block>
+      
+      <view class="goods" wx:for="{{currentGoods}}" wx:key="id">
+        <image mode="aspectFill" class="pic" src="{{item.pic}}" data-id='{{item.id}}' bindtap="toDetailsTap"></image>
+        <view class="name ellipsis" data-id='{{item.id}}' bindtap="toDetailsTap">{{item.name}}</view>
+        <view class='soldInfo'>
+          <view class='good-price-box'>
+            <text class="price">¥{{item.minPrice}}</text>
+          </view>
+        </view>
+        <view class='soldInfo'>
+          <view class='good-sales-box'>
+            <text class="number">已售 {{item.numberSells}}件</text>
+            <text wx:if="{{item.gotScore}}">好评送{{item.gotScore}}积分</text>
+          </view>
+        </view>
+        <image data-id="{{item.id}}" bindtap="addShopCar" class="car" src="/images/icon/car.svg"></image>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<van-popup
+  show="{{ skuCurGoodsShow }}"
+  position="bottom"
+  round
+  custom-style="padding-top:32rpx;max-height: 80%;"
+  bind:close="closeSku"
+>
+  <van-card
+    centered
+    price="{{ selectSizePrice }}"
+    origin-price="{{ selectSizePrice != selectSizePrice ? selectSizeOPrice : '' }}"
+    title="{{ skuCurGoods.basicInfo.name }}"
+    thumb="{{ skuGoodsPic }}"
+  />
+  <view class="sku-container">
+    <view class="sku" wx:for="{{skuCurGoods.properties}}" wx:key="id">
+      <view class="t">{{item.name}}</view>
+      <view class="items">
+        <text class="{{small.active? 'active' : ''}}" wx:for="{{item.childsCurGoods}}" wx:for-item="small" wx:key="id" data-pid="{{small.propertyId}}" data-id="{{small.id}}" bindtap="skuSelect">{{small.name}}</text>
+      </view>
+    </view>
+    <view class="num">
+      <view class="t">购买数量</view>
+      <van-stepper value="{{ skuCurGoods.basicInfo.storesBuy }}" bind:plus="storesJia" bind:minus="storesJian" />
+    </view>
+  </view>
+  <van-button type="danger" block bind:click="addCarSku">加入购物车</van-button>
+</van-popup>
+
+<van-dialog id="van-dialog-auth-login" bind:getuserinfo="processLogin" />
